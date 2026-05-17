@@ -15,10 +15,10 @@ namespace VetClinicApp.Models
 
         public DateTime Date { get; set; } = DateTime.Now;
 
-        public string DoctorId { get; set; } // String or FK to Doctor table
+        public string DoctorId { get; set; } = string.Empty; // String or FK to Doctor table
 
-        public string ItemCode { get; set; }
-        public string Description { get; set; }
+        public string ItemCode { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         public int Quantity { get; set; }
         public decimal Amount { get; set; }
