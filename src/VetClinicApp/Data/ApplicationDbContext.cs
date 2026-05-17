@@ -13,6 +13,8 @@ namespace VetClinicApp.Data
         public DbSet<Patient> Patients { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
         public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<Doctor> Doctors { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +24,19 @@ namespace VetClinicApp.Data
             modelBuilder.Entity<InventoryItem>()
                 .HasIndex(i => i.ItemCode)
                 .IsUnique();
+
+            // Configure relationships for Appointments
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Patient)
+                .WithMany()
+                .HasForeignKey(a => a.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Doctor)
+                .WithMany(d => d.Appointments)
+                .HasForeignKey(a => a.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Client>()
                 .Property(c => c.Balance)
