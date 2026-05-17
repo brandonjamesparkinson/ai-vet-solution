@@ -12,12 +12,17 @@ namespace VetClinicApp.Data
         public DbSet<Client> Clients { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
+        public DbSet<InventoryItem> InventoryItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Additional configurations if needed
+            // Ensure ItemCode is unique in Inventory
+            modelBuilder.Entity<InventoryItem>()
+                .HasIndex(i => i.ItemCode)
+                .IsUnique();
+
             modelBuilder.Entity<Client>()
                 .Property(c => c.Balance)
                 .HasColumnType("decimal(18,2)");

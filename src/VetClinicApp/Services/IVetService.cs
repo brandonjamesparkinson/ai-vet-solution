@@ -25,5 +25,12 @@ namespace VetClinicApp.Services
         Task<MedicalRecord> AddMedicalRecordAsync(MedicalRecord record);
         Task UpdateMedicalRecordAsync(MedicalRecord record);
         Task DeleteMedicalRecordAsync(int recordId);
+
+        // Inventory operations
+        Task<List<InventoryItem>> GetInventoryItemsAsync();
+        Task<InventoryItem> GetInventoryItemByIdAsync(int inventoryItemId);
+        Task<InventoryItem> AddInventoryItemAsync(InventoryItem item);
+        Task UpdateInventoryItemAsync(InventoryItem item);
+        Task DeleteInventoryItemAsync(int inventoryItemId);
     }
 }

@@ -96,6 +96,13 @@ namespace VetClinicApp.Services
         public async Task<MedicalRecord> AddMedicalRecordAsync(MedicalRecord record)
         {
             _context.MedicalRecords.Add(record);
+            
+            var item = await _context.InventoryItems.FirstOrDefaultAsync(i => i.ItemCode == record.ItemCode);
+            if (item != null)
+            {
+                item.QuantityOnHand -= record.Quantity;
+            }
+
             await _context.SaveChangesAsync();
             return record;
         }
@@ -112,6 +119,40 @@ namespace VetClinicApp.Services
             if (record != null)
             {
                 _context.MedicalRecords.Remove(record);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Inventory operations
+        public async Task<List<InventoryItem>> GetInventoryItemsAsync()
+        {
+            return await _context.InventoryItems.ToListAsync();
+        }
+
+        public async Task<InventoryItem> GetInventoryItemByIdAsync(int inventoryItemId)
+        {
+            return await _context.InventoryItems.FindAsync(inventoryItemId);
+        }
+
+        public async Task<InventoryItem> AddInventoryItemAsync(InventoryItem item)
+        {
+            _context.InventoryItems.Add(item);
+            await _context.SaveChangesAsync();
+            return item;
+        }
+
+        public async Task UpdateInventoryItemAsync(InventoryItem item)
+        {
+            _context.Entry(item).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteInventoryItemAsync(int inventoryItemId)
+        {
+            var item = await _context.InventoryItems.FindAsync(inventoryItemId);
+            if (item != null)
+            {
+                _context.InventoryItems.Remove(item);
                 await _context.SaveChangesAsync();
             }
         }

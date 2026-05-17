@@ -19,7 +19,7 @@ namespace VetClinicApp.Models
         public string Breed { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
         public string Sex { get; set; } = string.Empty; // M, F, Neutered, Spayed
-        public DateTime DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; } = DateTime.Today;
         public decimal WeightLbs { get; set; }
 
         public string RabiesTagNumber { get; set; } = string.Empty;

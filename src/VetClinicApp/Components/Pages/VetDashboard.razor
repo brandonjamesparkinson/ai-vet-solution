@@ -147,7 +147,19 @@
     <div class="card shadow-sm border-0">
         <div class="card-header py-1 bg-dark text-white d-flex justify-content-between align-items-center">
             <span class="fw-bold"><i class="bi bi-clock-history"></i> Medical History & Invoicing</span>
-            <button class="btn btn-light btn-sm py-0" @onclick="AddMedicalRecord"><i class="bi bi-plus-circle"></i> Add Item</button>
+            <div class="d-flex align-items-center gap-2">
+                <select class="form-select form-select-sm text-dark" style="width: 250px;" @bind="SelectedItemCode">
+                    <option value="">-- Select Inventory Item --</option>
+                    @if (InventoryItems != null)
+                    {
+                        foreach(var item in InventoryItems)
+                        {
+                            <option value="@item.ItemCode">@item.Name (@item.SellingPrice.ToString("C"))</option>
+                        }
+                    }
+                </select>
+                <button class="btn btn-light btn-sm py-0" @onclick="AddMedicalRecord"><i class="bi bi-plus-circle"></i> Add</button>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
@@ -199,11 +211,14 @@
     private List<Patient> Patients;
     private Patient SelectedPatient;
     private List<MedicalRecord> MedicalHistory;
+    private List<InventoryItem> InventoryItems;
+    private string SelectedItemCode = "";
 
     private List<Client> Clients = new();
 
     protected override async Task OnInitializedAsync()
     {
+        InventoryItems = await VetService.GetInventoryItemsAsync();
         Clients = await VetService.GetClientsAsync();
         
         // Seed the DB if it's empty to have something to look at
@@ -325,18 +340,25 @@
 
     private async Task AddMedicalRecord()
     {
-        if (SelectedPatient == null || SelectedPatient.PatientId == 0) return;
+        if (SelectedPatient == null || SelectedPatient.PatientId == 0 || string.IsNullOrEmpty(SelectedItemCode)) return;
+        
+        var invItem = InventoryItems?.FirstOrDefault(i => i.ItemCode == SelectedItemCode);
+        if (invItem == null) return;
+
         var newRecord = new MedicalRecord 
         { 
             PatientId = SelectedPatient.PatientId, 
             Date = DateTime.Now,
             DoctorId = "DR. DEFAULT", 
-            ItemCode = "NEW", 
-            Description = "New Item", 
+            ItemCode = invItem.ItemCode, 
+            Description = invItem.Name, 
             Quantity = 1, 
-            Amount = 0 
+            Amount = invItem.SellingPrice 
         };
         await VetService.AddMedicalRecordAsync(newRecord);
         MedicalHistory = await VetService.GetMedicalRecordsByPatientIdAsync(SelectedPatient.PatientId);
+        
+        // Refresh inventory list to reflect deducted stock
+        InventoryItems = await VetService.GetInventoryItemsAsync();
     }
 }
