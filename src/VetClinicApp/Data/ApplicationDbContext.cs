@@ -1,0 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using VetClinicApp.Models;
+
+namespace VetClinicApp.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<Client> Clients { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<MedicalRecord> MedicalRecords { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Additional configurations if needed
+            modelBuilder.Entity<Client>()
+                .Property(c => c.Balance)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Patient>()
+                .Property(p => p.WeightLbs)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<MedicalRecord>()
+                .Property(m => m.Amount)
+                .HasColumnType("decimal(18,2)");
+        }
+    }
+}

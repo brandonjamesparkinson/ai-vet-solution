@@ -1,0 +1,269 @@
+@page "/dashboard"
+@using VetClinicApp.Models
+@using VetClinicApp.Services
+@inject IVetService VetService
+
+<PageTitle>Veterinary Dashboard</PageTitle>
+
+<div class="container-fluid pt-2 pb-4">
+    <div class="row mb-2">
+        <div class="col">
+            <h4 class="mb-0 text-primary"><i class="bi bi-heart-pulse"></i> Veterinary Dashboard</h4>
+        </div>
+        <div class="col-auto">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" placeholder="Search Client..." />
+                <button class="btn btn-outline-secondary" type="button">Find</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Section: Client Info -->
+    <div class="card mb-3 shadow-sm border-0 bg-light">
+        <div class="card-header py-1 bg-primary text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="bi bi-person-fill"></i> Client Information</span>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-light btn-sm py-0"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-success btn-sm py-0"><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+        <div class="card-body py-2 px-3">
+            @if (SelectedClient != null)
+            {
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">ID/Title:</label></div>
+                    <div class="col-md-1"><input type="text" class="form-control form-control-sm" value="@SelectedClient.ClientId" readonly /></div>
+                    <div class="col-md-1"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.Title" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">First Name:</label></div>
+                    <div class="col-md-3"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.FirstName" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Last Name:</label></div>
+                    <div class="col-md-4"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.LastName" /></div>
+                </div>
+                <div class="row g-2 mt-1 align-items-center">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Address:</label></div>
+                    <div class="col-md-5"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.Address" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">City/St/Zip:</label></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.City" /></div>
+                    <div class="col-md-1"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.State" /></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.ZipCode" /></div>
+                </div>
+                <div class="row g-2 mt-1 align-items-center">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Home Ph:</label></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.HomePhone" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Cell Ph:</label></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedClient.CellPhone" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Email:</label></div>
+                    <div class="col-md-3"><input type="email" class="form-control form-control-sm" @bind="SelectedClient.Email" /></div>
+
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0 text-danger">Balance:</label></div>
+                    <div class="col-md-1"><input type="text" class="form-control form-control-sm fw-bold text-end" value="@SelectedClient.Balance.ToString("C")" readonly /></div>
+                </div>
+            }
+            else
+            {
+                <div class="text-muted small">No client selected.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Middle Section: Patient Info -->
+    <div class="card mb-3 shadow-sm border-0 bg-light">
+        <div class="card-header py-1 bg-secondary text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="bi bi-browser-safari"></i> Patient Information</span>
+            <div class="d-flex align-items-center gap-2">
+                <select class="form-select form-select-sm" style="width: 200px;" @onchange="OnPatientSelected">
+                    @if (Patients != null && Patients.Any())
+                    {
+                        @foreach (var patient in Patients)
+                        {
+                            <option value="@patient.PatientId" selected="@(SelectedPatient?.PatientId == patient.PatientId)">@patient.Name (@patient.Species)</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">-- No Patients --</option>
+                    }
+                </select>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-light btn-sm py-0"><i class="bi bi-plus-circle"></i> New</button>
+                    <button class="btn btn-success btn-sm py-0"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body py-2 px-3">
+            @if (SelectedPatient != null)
+            {
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Name:</label></div>
+                    <div class="col-md-3"><input type="text" class="form-control form-control-sm fw-bold" @bind="SelectedPatient.Name" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Species:</label></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedPatient.Species" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Breed:</label></div>
+                    <div class="col-md-4"><input type="text" class="form-control form-control-sm" @bind="SelectedPatient.Breed" /></div>
+                </div>
+                <div class="row g-2 mt-1 align-items-center">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Sex/Color:</label></div>
+                    <div class="col-md-1">
+                        <select class="form-select form-select-sm" @bind="SelectedPatient.Sex">
+                            <option value="M">M</option>
+                            <option value="F">F</option>
+                            <option value="N">N</option>
+                            <option value="S">S</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedPatient.Color" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">DOB/Age:</label></div>
+                    <div class="col-md-2"><input type="date" class="form-control form-control-sm" @bind="SelectedPatient.DateOfBirth" /></div>
+                    
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Weight (lbs):</label></div>
+                    <div class="col-md-1"><input type="number" step="0.1" class="form-control form-control-sm" @bind="SelectedPatient.WeightLbs" /></div>
+
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0">Rabies Tag:</label></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" @bind="SelectedPatient.RabiesTagNumber" /></div>
+                </div>
+                <div class="row g-2 mt-1 align-items-start">
+                    <div class="col-md-1 text-end"><label class="col-form-label-sm fw-bold mb-0 mt-1 text-danger">Allergies:</label></div>
+                    <div class="col-md-11"><textarea class="form-control form-control-sm text-danger" rows="2" @bind="SelectedPatient.Allergies"></textarea></div>
+                </div>
+            }
+            else
+            {
+                <div class="text-muted small">No patient selected.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Bottom Section: Medical History -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header py-1 bg-dark text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="bi bi-clock-history"></i> Medical History & Invoicing</span>
+            <button class="btn btn-light btn-sm py-0"><i class="bi bi-plus-circle"></i> Add Item</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                <table class="table table-sm table-striped table-hover mb-0" style="font-size: 0.85rem;">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th style="width: 10%">Date</th>
+                            <th style="width: 10%">Doctor</th>
+                            <th style="width: 10%">Code</th>
+                            <th style="width: 45%">Description</th>
+                            <th style="width: 8%" class="text-center">Qty</th>
+                            <th style="width: 10%" class="text-end">Amount</th>
+                            <th style="width: 7%" class="text-center">Pub</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (MedicalHistory != null && MedicalHistory.Any())
+                        {
+                            @foreach (var record in MedicalHistory)
+                            {
+                                <tr>
+                                    <td>@record.Date.ToShortDateString()</td>
+                                    <td>@record.DoctorId</td>
+                                    <td>@record.ItemCode</td>
+                                    <td>@record.Description</td>
+                                    <td class="text-center">@record.Quantity</td>
+                                    <td class="text-end">@record.Amount.ToString("C")</td>
+                                    <td class="text-center">
+                                        <input class="form-check-input" type="checkbox" checked="@record.IsPublic" disabled />
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-3">No medical history records found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Client SelectedClient;
+    private List<Patient> Patients;
+    private Patient SelectedPatient;
+    private List<MedicalRecord> MedicalHistory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // For demonstration, we'll load mock data directly if DB is empty, or fetch from service.
+        // For this task, we can use mock data if the DB isn't populated yet.
+        await LoadMockData();
+    }
+
+    private async Task LoadMockData()
+    {
+        // Mock Client
+        SelectedClient = new Client
+        {
+            ClientId = 1001,
+            Title = "Mr.",
+            FirstName = "John",
+            LastName = "Doe",
+            Address = "123 Main St",
+            City = "Springfield",
+            State = "IL",
+            ZipCode = "62701",
+            HomePhone = "(555) 123-4567",
+            CellPhone = "(555) 987-6543",
+            Email = "johndoe@email.com",
+            Balance = 150.50m
+        };
+
+        // Mock Patients
+        Patients = new List<Patient>
+        {
+            new Patient { PatientId = 1, ClientId = 1001, Name = "Buddy", Species = "Canine", Breed = "Golden Retriever", Sex = "N", Color = "Golden", DateOfBirth = new DateTime(2018, 5, 12), WeightLbs = 65.4m, RabiesTagNumber = "RAB-9923", Allergies = "Penicillin" },
+            new Patient { PatientId = 2, ClientId = 1001, Name = "Whiskers", Species = "Feline", Breed = "Siamese", Sex = "S", Color = "Seal Point", DateOfBirth = new DateTime(2020, 8, 20), WeightLbs = 10.2m, RabiesTagNumber = "RAB-1102" }
+        };
+
+        await SelectPatient(Patients.First().PatientId);
+    }
+
+    private async Task OnPatientSelected(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int patientId))
+        {
+            await SelectPatient(patientId);
+        }
+    }
+
+    private async Task SelectPatient(int patientId)
+    {
+        SelectedPatient = Patients.FirstOrDefault(p => p.PatientId == patientId);
+        
+        // Mock Medical History based on selected patient
+        if (SelectedPatient?.PatientId == 1)
+        {
+            MedicalHistory = new List<MedicalRecord>
+            {
+                new MedicalRecord { RecordId = 1, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "EXAM-ANN", Description = "Annual Wellness Examination", Quantity = 1, Amount = 65.00m, IsPublic = true },
+                new MedicalRecord { RecordId = 2, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "VACC-RAB", Description = "Rabies Vaccination (3 Year)", Quantity = 1, Amount = 25.00m, IsPublic = true },
+                new MedicalRecord { RecordId = 3, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "MED-HRT", Description = "Heartgard Plus (51-100 lbs) 6pk", Quantity = 1, Amount = 60.50m, IsPublic = true }
+            };
+        }
+        else if (SelectedPatient?.PatientId == 2)
+        {
+            MedicalHistory = new List<MedicalRecord>
+            {
+                new MedicalRecord { RecordId = 4, PatientId = 2, Date = DateTime.Now.AddMonths(-2), DoctorId = "DR. JONES", ItemCode = "EXAM-ILL", Description = "Illness Examination - Vomiting", Quantity = 1, Amount = 75.00m, IsPublic = true },
+                new MedicalRecord { RecordId = 5, PatientId = 2, Date = DateTime.Now.AddMonths(-2), DoctorId = "DR. JONES", ItemCode = "INJ-CER", Description = "Cerenia Injection", Quantity = 1, Amount = 35.00m, IsPublic = true }
+            };
+        }
+    }
+}
