@@ -60,25 +60,29 @@
     }
 
     .nav-item[b-m1ii5onejx]  .nav-link {
-        color: #d7d7d7;
+        color: #94a3b8; /* Slate 400 for unselected text */
         background: none;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         height: 3rem;
         display: flex;
         align-items: center;
         line-height: 3rem;
         width: 100%;
+        transition: all 0.2s ease-in-out;
+        padding-left: 1rem;
     }
 
 .nav-item[b-m1ii5onejx]  a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
+    background-color: #1e293b; /* Slate 800 */
+    color: #38bdf8; /* Light Sky Blue for active accent */
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #38bdf8;
 }
 
-.nav-item[b-m1ii5onejx]  .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
+.nav-item[b-m1ii5onejx]  .nav-link:hover:not(.active) {
+    background-color: #1e293b;
+    color: #e2e8f0; /* Slate 200 */
 }
 
 .nav-scrollable[b-m1ii5onejx] {

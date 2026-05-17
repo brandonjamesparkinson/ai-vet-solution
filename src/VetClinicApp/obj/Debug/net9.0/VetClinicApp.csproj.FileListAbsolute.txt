@@ -198,8 +198,6 @@ C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\fzo9darxet
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\mlduffhd7n-h1s4sie4z3.gz
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\5cc9vfo1mf-63fj8s7r0e.gz
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\myxq3xdaka-0j3bgjxly4.gz
-C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\gij2zf2f5q-9p3hcz57mf.gz
-C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\8u6w8ewin1-9p3hcz57mf.gz
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\staticwebassets.build.json
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\staticwebassets.development.json
@@ -210,3 +208,7 @@ C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\refint\VetClinicApp.d
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\VetClinicApp.pdb
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\VetClinicApp.genruntimeconfig.cache
 C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\ref\VetClinicApp.dll
+C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\VetClinicApp.sourcelink.json
+C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\gij2zf2f5q-qkykon891s.gz
+C:\Repos\ai-vet-solution\src\VetClinicApp\obj\Debug\net9.0\compressed\8u6w8ewin1-qkykon891s.gz

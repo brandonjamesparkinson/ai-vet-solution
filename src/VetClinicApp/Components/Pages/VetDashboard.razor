@@ -1,4 +1,4 @@
-@page "/dashboard"
+@page "/"
 @using VetClinicApp.Models
 @using VetClinicApp.Services
 @inject IVetService VetService
@@ -25,7 +25,7 @@
             <span class="fw-bold"><i class="bi bi-person-fill"></i> Client Information</span>
             <div class="btn-group btn-group-sm">
                 <button class="btn btn-light btn-sm py-0"><i class="bi bi-pencil"></i> Edit</button>
-                <button class="btn btn-success btn-sm py-0"><i class="bi bi-save"></i> Save</button>
+                <button class="btn btn-success btn-sm py-0" @onclick="SaveClient"><i class="bi bi-save"></i> Save</button>
             </div>
         </div>
         <div class="card-body py-2 px-3">
@@ -92,7 +92,7 @@
                 </select>
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-light btn-sm py-0"><i class="bi bi-plus-circle"></i> New</button>
-                    <button class="btn btn-success btn-sm py-0"><i class="bi bi-save"></i> Save</button>
+                    <button class="btn btn-success btn-sm py-0" @onclick="SavePatient"><i class="bi bi-save"></i> Save</button>
                 </div>
             </div>
         </div>
@@ -199,40 +199,62 @@
     private Patient SelectedPatient;
     private List<MedicalRecord> MedicalHistory;
 
+    private List<Client> Clients = new();
+
     protected override async Task OnInitializedAsync()
     {
-        // For demonstration, we'll load mock data directly if DB is empty, or fetch from service.
-        // For this task, we can use mock data if the DB isn't populated yet.
-        await LoadMockData();
+        Clients = await VetService.GetClientsAsync();
+        
+        // Seed the DB if it's empty to have something to look at
+        if (!Clients.Any())
+        {
+            await SeedDatabase();
+            Clients = await VetService.GetClientsAsync();
+        }
+
+        SelectedClient = Clients.FirstOrDefault();
+        if (SelectedClient != null)
+        {
+            await LoadClientData(SelectedClient.ClientId);
+        }
     }
 
-    private async Task LoadMockData()
+    private async Task SeedDatabase()
     {
-        // Mock Client
-        SelectedClient = new Client
+        var client = new Client
         {
-            ClientId = 1001,
-            Title = "Mr.",
-            FirstName = "John",
-            LastName = "Doe",
-            Address = "123 Main St",
-            City = "Springfield",
-            State = "IL",
-            ZipCode = "62701",
-            HomePhone = "(555) 123-4567",
-            CellPhone = "(555) 987-6543",
-            Email = "johndoe@email.com",
+            Title = "Mr.", FirstName = "John", LastName = "Doe",
+            Address = "123 Main St", City = "Springfield", State = "IL", ZipCode = "62701",
+            HomePhone = "(555) 123-4567", CellPhone = "(555) 987-6543", Email = "johndoe@email.com",
             Balance = 150.50m
         };
+        await VetService.AddClientAsync(client);
 
-        // Mock Patients
-        Patients = new List<Patient>
+        var patient = new Patient
         {
-            new Patient { PatientId = 1, ClientId = 1001, Name = "Buddy", Species = "Canine", Breed = "Golden Retriever", Sex = "N", Color = "Golden", DateOfBirth = new DateTime(2018, 5, 12), WeightLbs = 65.4m, RabiesTagNumber = "RAB-9923", Allergies = "Penicillin" },
-            new Patient { PatientId = 2, ClientId = 1001, Name = "Whiskers", Species = "Feline", Breed = "Siamese", Sex = "S", Color = "Seal Point", DateOfBirth = new DateTime(2020, 8, 20), WeightLbs = 10.2m, RabiesTagNumber = "RAB-1102" }
+            ClientId = client.ClientId, Name = "Buddy", Species = "Canine", Breed = "Golden Retriever", Sex = "N",
+            Color = "Golden", DateOfBirth = new DateTime(2018, 5, 12), WeightLbs = 65.4m, RabiesTagNumber = "RAB-9923", Allergies = "Penicillin"
         };
+        await VetService.AddPatientAsync(patient);
 
-        await SelectPatient(Patients.First().PatientId);
+        var record = new MedicalRecord { PatientId = patient.PatientId, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "EXAM-ANN", Description = "Annual Wellness Examination", Quantity = 1, Amount = 65.00m, IsPublic = true };
+        await VetService.AddMedicalRecordAsync(record);
+    }
+
+    private async Task LoadClientData(int clientId)
+    {
+        SelectedClient = await VetService.GetClientByIdAsync(clientId);
+        Patients = await VetService.GetPatientsByClientIdAsync(clientId);
+        
+        if (Patients != null && Patients.Any())
+        {
+            await SelectPatient(Patients.First().PatientId);
+        }
+        else
+        {
+            SelectedPatient = null;
+            MedicalHistory = new List<MedicalRecord>();
+        }
     }
 
     private async Task OnPatientSelected(ChangeEventArgs e)
@@ -245,25 +267,26 @@
 
     private async Task SelectPatient(int patientId)
     {
-        SelectedPatient = Patients.FirstOrDefault(p => p.PatientId == patientId);
-        
-        // Mock Medical History based on selected patient
-        if (SelectedPatient?.PatientId == 1)
+        SelectedPatient = await VetService.GetPatientByIdAsync(patientId);
+        if (SelectedPatient != null)
         {
-            MedicalHistory = new List<MedicalRecord>
-            {
-                new MedicalRecord { RecordId = 1, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "EXAM-ANN", Description = "Annual Wellness Examination", Quantity = 1, Amount = 65.00m, IsPublic = true },
-                new MedicalRecord { RecordId = 2, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "VACC-RAB", Description = "Rabies Vaccination (3 Year)", Quantity = 1, Amount = 25.00m, IsPublic = true },
-                new MedicalRecord { RecordId = 3, PatientId = 1, Date = DateTime.Now.AddDays(-5), DoctorId = "DR. SMITH", ItemCode = "MED-HRT", Description = "Heartgard Plus (51-100 lbs) 6pk", Quantity = 1, Amount = 60.50m, IsPublic = true }
-            };
+            MedicalHistory = await VetService.GetMedicalRecordsByPatientIdAsync(patientId);
         }
-        else if (SelectedPatient?.PatientId == 2)
+    }
+
+    private async Task SaveClient()
+    {
+        if (SelectedClient != null)
         {
-            MedicalHistory = new List<MedicalRecord>
-            {
-                new MedicalRecord { RecordId = 4, PatientId = 2, Date = DateTime.Now.AddMonths(-2), DoctorId = "DR. JONES", ItemCode = "EXAM-ILL", Description = "Illness Examination - Vomiting", Quantity = 1, Amount = 75.00m, IsPublic = true },
-                new MedicalRecord { RecordId = 5, PatientId = 2, Date = DateTime.Now.AddMonths(-2), DoctorId = "DR. JONES", ItemCode = "INJ-CER", Description = "Cerenia Injection", Quantity = 1, Amount = 35.00m, IsPublic = true }
-            };
+            await VetService.UpdateClientAsync(SelectedClient);
+        }
+    }
+
+    private async Task SavePatient()
+    {
+        if (SelectedPatient != null)
+        {
+            await VetService.UpdatePatientAsync(SelectedPatient);
         }
     }
 }
