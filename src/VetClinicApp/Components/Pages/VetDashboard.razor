@@ -2,6 +2,7 @@
 @using VetClinicApp.Models
 @using VetClinicApp.Services
 @inject IVetService VetService
+@inject IAssistantService AssistantService
 @rendermode InteractiveServer
 
 <PageTitle>Veterinary Dashboard</PageTitle>
@@ -78,6 +79,7 @@
         <div class="card-header py-1 bg-secondary text-white d-flex justify-content-between align-items-center">
             <span class="fw-bold"><i class="bi bi-browser-safari"></i> Patient Information</span>
             <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-warning btn-sm py-0 fw-bold" @onclick="OpenSummaryModal" disabled="@(SelectedPatient == null)"><i class="bi bi-magic"></i> AI Summary</button>
                 <select class="form-select form-select-sm" style="width: 200px;" @onchange="OnPatientSelected">
                     @if (Patients != null && Patients.Any())
                     {
@@ -204,6 +206,45 @@
             </div>
         </div>
     </div>
+
+    <!-- AI Summary Modal -->
+    @if (ShowSummaryModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-magic"></i> AI Patient Summary</h5>
+                        <button type="button" class="btn-close" @onclick="CloseSummaryModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (IsLoadingSummary)
+                        {
+                            <div class="d-flex justify-content-center align-items-center flex-column py-4">
+                                <div class="spinner-border text-warning mb-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Analyzing patient history...</span>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(SummaryText))
+                        {
+                            <div class="bg-light p-3 rounded border">
+                                @((MarkupString)SummaryText)
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-danger">Failed to generate summary.</span>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseSummaryModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
@@ -215,6 +256,10 @@
     private string SelectedItemCode = "";
 
     private List<Client> Clients = new();
+
+    private bool ShowSummaryModal = false;
+    private bool IsLoadingSummary = false;
+    private string SummaryText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -360,5 +405,64 @@
         
         // Refresh inventory list to reflect deducted stock
         InventoryItems = await VetService.GetInventoryItemsAsync();
+    }
+
+    private async Task OpenSummaryModal()
+    {
+        if (SelectedClient == null || SelectedPatient == null) return;
+        
+        ShowSummaryModal = true;
+        IsLoadingSummary = true;
+        SummaryText = string.Empty;
+        StateHasChanged();
+
+        string patientDataPrompt = FormatPatientDataForPrompt();
+        
+        try 
+        {
+            SummaryText = await AssistantService.GetPatientSummaryAsync(patientDataPrompt);
+        }
+        catch (Exception ex)
+        {
+            SummaryText = $"<span class=\"text-danger\">Error: {ex.Message}</span>";
+        }
+        finally
+        {
+            IsLoadingSummary = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseSummaryModal()
+    {
+        ShowSummaryModal = false;
+    }
+
+    private string FormatPatientDataForPrompt()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Client: {SelectedClient.FirstName} {SelectedClient.LastName}.");
+        
+        int age = DateTime.Today.Year - SelectedPatient.DateOfBirth.Year;
+        if (SelectedPatient.DateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
+        
+        sb.AppendLine($"Patient: {SelectedPatient.Name}, {age}yo {SelectedPatient.Species} ({SelectedPatient.Breed}).");
+        sb.AppendLine($"Sex: {SelectedPatient.Sex}, Weight: {SelectedPatient.WeightLbs} lbs.");
+        sb.AppendLine($"Allergies: {(string.IsNullOrWhiteSpace(SelectedPatient.Allergies) ? "None known" : SelectedPatient.Allergies)}.");
+        
+        sb.AppendLine("History:");
+        if (MedicalHistory != null && MedicalHistory.Any())
+        {
+            foreach (var record in MedicalHistory.OrderByDescending(m => m.Date).Take(10))
+            {
+                sb.AppendLine($"- {record.Date.ToShortDateString()}: {record.Description}");
+            }
+        }
+        else
+        {
+            sb.AppendLine("No medical history available.");
+        }
+        
+        return sb.ToString();
     }
 }

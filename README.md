@@ -10,6 +10,7 @@ This project provides the foundation for managing veterinary clinic operations, 
   - **Top Section**: Manage Client Details and contact information.
   - **Middle Section**: Select and manage Patients linked to a specific client.
   - **Bottom Section**: Review a comprehensive chronological Medical History & Invoicing data grid.
+- **AI Patient Summary**: Generates a quick AI-powered summary of the selected patient's status, highlighting chronic conditions, allergies, and overdue vaccinations.
 - **Robust Backend**: ASP.NET Core Blazor App (Interactive Server mode) acting as both the frontend UI and the backend service layer.
 - **Relational Data**: Fully configured Entity Framework Core implementation using a Code-First approach.
 
@@ -69,7 +70,7 @@ ai-vet-solution/
         │   └── Pages/            # VetDashboard.razor (Main UI)
         ├── Data/                 # ApplicationDbContext (EF Core)
         ├── Models/               # C# Entity Models (Client, Patient, MedicalRecord)
-        ├── Services/             # Business logic and database operations (IVetService, VetService)
+        ├── Services/             # Business logic and database operations (IVetService, VetService, AssistantService)
         ├── wwwroot/              # Static assets (CSS, images)
         ├── appsettings.json      # Application configuration and Connection Strings
         └── Program.cs            # App entry point & Dependency Injection
